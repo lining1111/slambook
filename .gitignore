@@ -1,8 +1,2 @@
-*build*
-*.out
-CMakeCache.txt
-CMaeFiles
-cmake_install.cmake
-*.kdev4
-*.DS*
-.idea*
+.idea
+cmake-build-debug
