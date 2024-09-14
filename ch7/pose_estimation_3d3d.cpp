@@ -13,6 +13,7 @@
 #include <g2o/solvers/eigen/linear_solver_eigen.h>
 #include <g2o/types/sba/types_six_dof_expmap.h>
 #include <chrono>
+#include <g2o/core/optimization_algorithm_levenberg.h>
 
 using namespace std;
 using namespace cv;
@@ -259,9 +260,13 @@ void bundleAdjustment(
         Mat &R, Mat &t) {
     // 初始化g2o
     typedef g2o::BlockSolver<g2o::BlockSolverTraits<6, 3> > Block;  // pose维度为 6, landmark 维度为 3
-    Block::LinearSolverType *linearSolver = new g2o::LinearSolverEigen<Block::PoseMatrixType>(); // 线性方程求解器
-    Block *solver_ptr = new Block(linearSolver);      // 矩阵块求解器
-    g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+//    Block::LinearSolverType *linearSolver = new g2o::LinearSolverEigen<Block::PoseMatrixType>(); // 线性方程求解器
+//    Block *solver_ptr = new Block(linearSolver);      // 矩阵块求解器
+//    g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+    auto linearSolver = std::make_unique<g2o::LinearSolverEigen<Block::PoseMatrixType>>(); // 线性方程求解器
+    auto solver_ptr = std::make_unique<Block>(std::move(linearSolver));      // 矩阵块求解器
+    g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(std::move(solver_ptr));
+
     g2o::SparseOptimizer optimizer;
     optimizer.setAlgorithm(solver);
 

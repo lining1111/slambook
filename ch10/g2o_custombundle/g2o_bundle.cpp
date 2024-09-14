@@ -121,14 +121,14 @@ void WriteToBALProblem(BALProblem *bal_problem, g2o::SparseOptimizer *optimizer)
 }
 
 //this function is  unused yet..
-void SetMinimizerOptions(std::shared_ptr<BalBlockSolver> &solver_ptr, const BundleParams &params,
+void SetMinimizerOptions(std::unique_ptr<BalBlockSolver> &solver_ptr, const BundleParams &params,
                          g2o::SparseOptimizer *optimizer) {
     //std::cout<<"Set Minimizer  .."<< std::endl;
     g2o::OptimizationAlgorithmWithHessian *solver;
     if (params.trust_region_strategy == "levenberg_marquardt") {
-        solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr.get());
+        solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
     } else if (params.trust_region_strategy == "dogleg") {
-        solver = new g2o::OptimizationAlgorithmDogleg(solver_ptr.get());
+        solver = new g2o::OptimizationAlgorithmDogleg(std::move(solver_ptr));
     } else {
         std::cout << "Please check your trust_region_strategy parameter again.." << std::endl;
         exit(EXIT_FAILURE);
@@ -139,49 +139,47 @@ void SetMinimizerOptions(std::shared_ptr<BalBlockSolver> &solver_ptr, const Bund
 }
 
 //this function is  unused yet..
-void SetLinearSolver(std::shared_ptr<BalBlockSolver> &solver_ptr, const BundleParams &params) {
+void SetLinearSolver(std::unique_ptr<BalBlockSolver> &solver_ptr, const BundleParams &params) {
     //std::cout<<"Set Linear Solver .."<< std::endl;
-    g2o::LinearSolver<BalBlockSolver::PoseMatrixType> *linearSolver = 0;
+    std::unique_ptr<BalBlockSolver::LinearSolverType> linearSolver;
 
-    if (params.linear_solver == "dense_schur") {
-        linearSolver = new g2o::LinearSolverDense<BalBlockSolver::PoseMatrixType>();
-    } else if (params.linear_solver == "sparse_schur") {
-        linearSolver = new g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType>();
-        dynamic_cast<g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType> * >(linearSolver)->setBlockOrdering(
-                true);  // AMD ordering , only needed for sparse cholesky solver
+    if(params.linear_solver == "dense_schur" ){
+        linearSolver = g2o::make_unique<g2o::LinearSolverDense<BalBlockSolver::PoseMatrixType> >();
     }
-
-
-    solver_ptr = std::make_shared<BalBlockSolver>(linearSolver);
-    std::cout << "Set Complete.." << std::endl;
+    else if(params.linear_solver == "sparse_schur"){
+        auto cholesky = g2o::make_unique<g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType> >();
+        cholesky->setBlockOrdering(true);
+        linearSolver = std::move(cholesky);
+    }
+    solver_ptr =  g2o::make_unique<BalBlockSolver>(std::move(linearSolver));
+    std::cout <<  "Set Complete.."<< std::endl;
 }
 
 void SetSolverOptionsFromFlags(BALProblem *bal_problem, const BundleParams &params, g2o::SparseOptimizer *optimizer) {
-    BalBlockSolver *solver_ptr;
 
+    std::unique_ptr<BalBlockSolver::LinearSolverType> linearSolver;
 
-    g2o::LinearSolver<BalBlockSolver::PoseMatrixType> *linearSolver = 0;
-
-    if (params.linear_solver == "dense_schur") {
-        linearSolver = new g2o::LinearSolverDense<BalBlockSolver::PoseMatrixType>();
-    } else if (params.linear_solver == "sparse_schur") {
-        linearSolver = new g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType>();
-        dynamic_cast<g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType> * >(linearSolver)->setBlockOrdering(
-                true);  // AMD ordering , only needed for sparse cholesky solver
+    if(params.linear_solver == "dense_schur" ){
+        linearSolver = g2o::make_unique<g2o::LinearSolverDense<BalBlockSolver::PoseMatrixType> >();
+    }
+    else if(params.linear_solver == "sparse_schur"){
+        auto cholesky = g2o::make_unique<g2o::LinearSolverCholmod<BalBlockSolver::PoseMatrixType> >();
+        cholesky->setBlockOrdering(true);
+        linearSolver = std::move(cholesky);
     }
 
+    std::unique_ptr<BalBlockSolver> solver_ptr( new BalBlockSolver(std::move(linearSolver)));
 
-    solver_ptr = new BalBlockSolver(linearSolver);
-    //SetLinearSolver(solver_ptr, params);
-
-    //SetMinimizerOptions(solver_ptr, params, optimizer);
-    g2o::OptimizationAlgorithmWithHessian *solver;
-    if (params.trust_region_strategy == "levenberg_marquardt") {
-        solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
-    } else if (params.trust_region_strategy == "dogleg") {
-        solver = new g2o::OptimizationAlgorithmDogleg(solver_ptr);
-    } else {
-        std::cout << "Please check your trust_region_strategy parameter again.." << std::endl;
+    g2o::OptimizationAlgorithmWithHessian* solver;
+    if(params.trust_region_strategy == "levenberg_marquardt"){
+        solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+    }
+    else if(params.trust_region_strategy == "dogleg"){
+        solver = new g2o::OptimizationAlgorithmDogleg(std::move(solver_ptr));
+    }
+    else
+    {
+        std::cout << "Please check your trust_region_strategy parameter again.."<< std::endl;
         exit(EXIT_FAILURE);
     }
 

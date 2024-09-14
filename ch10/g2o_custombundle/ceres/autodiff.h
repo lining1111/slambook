@@ -222,26 +222,26 @@ struct AutoDiff {
     const int jet9  = N0 + N1 + N2 + N3 + N4 + N5 + N6 + N7 + N8;
 
     const JetT *unpacked_parameters[10] = {
-        x.get() + jet0,
-        x.get() + jet1,
-        x.get() + jet2,
-        x.get() + jet3,
-        x.get() + jet4,
-        x.get() + jet5,
-        x.get() + jet6,
-        x.get() + jet7,
-        x.get() + jet8,
-        x.get() + jet9,
+        x.data() + jet0,
+        x.data() + jet1,
+        x.data() + jet2,
+        x.data() + jet3,
+        x.data() + jet4,
+        x.data() + jet5,
+        x.data() + jet6,
+        x.data() + jet7,
+        x.data() + jet8,
+        x.data() + jet9,
     };
 
-    JetT* output = x.get() + N0 + N1 + N2 + N3 + N4 + N5 + N6 + N7 + N8 + N9;
+    JetT* output = x.data() + N0 + N1 + N2 + N3 + N4 + N5 + N6 + N7 + N8 + N9;
 
 #define CERES_MAKE_1ST_ORDER_PERTURBATION(i)                            \
     if (N ## i) {                                                       \
       internal::Make1stOrderPerturbation<JetT, T, N ## i>(              \
           jet ## i,                                                     \
           parameters[i],                                                \
-          x.get() + jet ## i);                                          \
+          x.data() + jet ## i);                                          \
     }
     CERES_MAKE_1ST_ORDER_PERTURBATION(0);
     CERES_MAKE_1ST_ORDER_PERTURBATION(1);

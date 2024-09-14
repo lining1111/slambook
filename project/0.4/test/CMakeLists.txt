@@ -1,2 +1,2 @@
-add_executable(run_vo-4.0 run_vo.cpp)
-target_link_libraries(run_vo-4.0 myslam-4.0)
+add_executable(run_vo-0.4 run_vo.cpp)
+target_link_libraries(run_vo-0.4 myslam-0.4 glog)

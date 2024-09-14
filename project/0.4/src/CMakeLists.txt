@@ -1,4 +1,4 @@
-add_library(myslam-4.0 SHARED
+add_library(myslam-0.4 SHARED
         frame.cpp
         mappoint.cpp
         map.cpp
@@ -8,6 +8,6 @@ add_library(myslam-4.0 SHARED
         visual_odometry.cpp
 )
 
-target_link_libraries(myslam-4.0
+target_link_libraries(myslam-0.4
         ${THIRD_PARTY_LIBS}
 )

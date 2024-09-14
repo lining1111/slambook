@@ -138,9 +138,14 @@ void bundleAdjustment(
         Mat &R, Mat &t) {
     // 初始化g2o
     typedef g2o::BlockSolver<g2o::BlockSolverTraits<6, 3> > Block;  // pose 维度为 6, landmark 维度为 3
-    Block::LinearSolverType *linearSolver = new g2o::LinearSolverCSparse<Block::PoseMatrixType>(); // 线性方程求解器
-    Block *solver_ptr = new Block(linearSolver);     // 矩阵块求解器
-    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+//    Block::LinearSolverType *linearSolver = new g2o::LinearSolverCSparse<Block::PoseMatrixType>(); // 线性方程求解器
+//    Block *solver_ptr = new Block(linearSolver);     // 矩阵块求解器
+//    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    auto linearSolver = std::make_unique<g2o::LinearSolverCSparse<Block::PoseMatrixType>>(); // 线性方程求解器
+    auto solver_ptr = std::make_unique<Block>(std::move(linearSolver));      // 矩阵块求解器
+    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
+
     g2o::SparseOptimizer optimizer;
     optimizer.setAlgorithm(solver);
 
@@ -161,7 +166,7 @@ void bundleAdjustment(
     int index = 1;
     for (const Point3f p: points_3d)   // landmarks
     {
-        g2o::VertexSBAPointXYZ *point = new g2o::VertexSBAPointXYZ();
+        g2o::VertexPointXYZ *point = new g2o::VertexPointXYZ();
         point->setId(index++);
         point->setEstimate(Eigen::Vector3d(p.x, p.y, p.z));
         point->setMarginalized(true); // g2o 中必须设置 marg 参见第十讲内容
@@ -180,7 +185,7 @@ void bundleAdjustment(
     for (const Point2f p: points_2d) {
         g2o::EdgeProjectXYZ2UV *edge = new g2o::EdgeProjectXYZ2UV();
         edge->setId(index);
-        edge->setVertex(0, dynamic_cast<g2o::VertexSBAPointXYZ *> ( optimizer.vertex(index)));
+        edge->setVertex(0, dynamic_cast<g2o::VertexPointXYZ *> ( optimizer.vertex(index)));
         edge->setVertex(1, pose);
         edge->setMeasurement(Eigen::Vector2d(p.x, p.y));
         edge->setParameterId(0, 0);

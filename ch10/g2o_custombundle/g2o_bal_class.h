@@ -4,7 +4,7 @@
 
 #include "ceres/autodiff.h"
 
-#include "tools/rotation.h"
+#include "common/tools/rotation.h"
 #include "common/projection.h"
 
 class VertexCameraBAL : public g2o::BaseVertex<9, Eigen::VectorXd> {

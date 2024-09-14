@@ -1,40 +1,44 @@
 cmake_minimum_required(VERSION 3.27)
 project(slambook)
 # Eigen3
-find_package(Eigen3 REQUIRED)
-include_directories(${Eigen3_INCLUDE_DIRS})
+include_directories("/usr/include/eigen3")
 # 添加Pangolin依赖
 find_package(Pangolin REQUIRED)
 include_directories(${Pangolin_INCLUDE_DIRS})
+message(STATUS "Pangolin_INCLUDE_DIRS: ${Pangolin_INCLUDE_DIRS}")
 # 为使用 sophus，您需要使用find_package命令找到它
 find_package(Sophus REQUIRED)
+set(Sophus_LIBRARIES Sophus)
+# 未添加Sophus头文件路径的原因是源文件cmakelist.txt中 27 28 设置的路径不是安装路径
 #include_directories(${Sophus_INCLUDE_DIRS})
-#message(STATUS "Sophus_INCLUDE_DIRS = ${Sophus_INCLUDE_DIRS}")
 # 寻找OpenCV库
-find_package(OpenCV 4 REQUIRED)
+find_package(OpenCV REQUIRED)
 # pcl
-find_package(PCL REQUIRED COMPONENT common io)
+find_package(PCL REQUIRED COMPONENT common io filters)
 include_directories(${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 # 寻找Ceres库并添加它的头文件
 find_package(Ceres REQUIRED)
 include_directories(${CERES_INCLUDE_DIRS})
-# 寻找G2O
+# 寻找G2O 没有用G2O下的cmake_modules
 #find_package(G2O REQUIRED)
 #include_directories(${G2O_INCLUDE_DIRS})
-# CSparse
+# CSparse 由于没有用G2O下的cmake_modules
 #find_package(CSparse REQUIRED)
 #include_directories(${CSPARSE_INCLUDE_DIR})
-#Cholmod
+# Cholmod 由于没有用G2O下的cmake_modules
 #Find_Package(Cholmod REQUIRED)
 #include_directories(${CHOLMOD_INCLUDE_DIR})
 # gtsam
-find_package( GTSAMCMakeTools )
-find_package( GTSAM REQUIRED )
-include_directories( ${GTSAM_INCLUDE_DIR} )
+find_package(GTSAMCMakeTools)
+find_package(GTSAM REQUIRED)
+include_directories(${GTSAM_INCLUDE_DIR})
+# DBoW3
+set(DBoW3_LIBS DBoW3)
+
 # octomap
-find_package( octomap REQUIRED )
-include_directories( ${OCTOMAP_INCLUDE_DIRS} )
+find_package(octomap REQUIRED)
+include_directories(${OCTOMAP_INCLUDE_DIRS})
 
 ##ch2
 add_subdirectory(ch2)

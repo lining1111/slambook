@@ -148,9 +148,10 @@ int main(int argc, char **argv) {
     }
 
     typedef g2o::BlockSolver<g2o::BlockSolverTraits<6, 6>> Block;  // BlockSolver为6x6
-    Block::LinearSolverType *linearSolver = new g2o::LinearSolverCholmod<Block::PoseMatrixType>(); // 线性方程求解器
-    Block *solver_ptr = new Block(linearSolver);     // 矩阵块求解器
-    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    auto linearSolver = std::make_unique<g2o::LinearSolverDense<Block::PoseMatrixType>>(); // 线性方程求解器
+    auto solver_ptr = std::make_unique<Block>(std::move(linearSolver));      // 矩阵块求解器
+    // 梯度下降方法，从GN, LM, DogLeg 中选
+    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
     // 试试G-N或Dogleg？
     // g2o::OptimizationAlgorithmDogleg* solver = new g2o::OptimizationAlgorithmDogleg( solver_ptr );
     // g2o::OptimizationAlgorithmGaussNewton* solver = new g2o::OptimizationAlgorithmGaussNewton ( solver_ptr );

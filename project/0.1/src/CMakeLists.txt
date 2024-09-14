@@ -1,4 +1,4 @@
-add_library(myslam-1.0 SHARED
+add_library(myslam-0.1 SHARED
         frame.cpp
         mappoint.cpp
         map.cpp
@@ -6,6 +6,6 @@ add_library(myslam-1.0 SHARED
         config.cpp
 )
 
-target_link_libraries(myslam-1.0
+target_link_libraries(myslam-0.1
         ${THIRD_PARTY_LIBS}
 )
